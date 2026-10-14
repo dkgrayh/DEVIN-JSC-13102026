@@ -1,14 +1,20 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { apiPlugin } from './server/api'
 
 const brand = '#015AB1'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  if (env.DATABASE_URL) process.env.DATABASE_URL = env.DATABASE_URL
+
+  return {
   plugins: [
     react(),
     tailwindcss(),
+    apiPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon-32.png', 'apple-touch-icon.png'],
@@ -44,6 +50,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
+        navigateFallbackDenylist: [/^\/api\//],
       },
       devOptions: {
         enabled: true,
@@ -59,4 +66,5 @@ export default defineConfig({
     host: true,
     port: 4173,
   },
+}
 })
